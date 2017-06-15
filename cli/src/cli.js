@@ -4,7 +4,7 @@
  * @Email:  crschmit@gmail.com
  * @Filename: cli.js
  * @Last modified by:   Christian Schmitt
- * @Last modified time: 2017-06-15T08:48:28-05:00
+ * @Last modified time: 2017-06-15T10:22:52-05:00
  */
 
 
@@ -34,7 +34,23 @@ cli
     })
 
     server.on('data', (buffer) => {
-      this.log(Message.fromJSON(buffer).toString())
+      let mssg = Message.fromJSON(buffer)
+      let cmd = mssg.command
+      let clr
+      if (cmd === 'disconnect') {
+        clr = 'yellow'
+      } else if (cmd === 'echo') {
+        clr = 'gray'
+      } else if (cmd === 'broadcast') {
+        clr = 'white'
+      } else if (cmd === 'whisper') {
+        clr = 'cyan'
+      } else if (cmd === 'users') {
+        clr = 'magenta'
+      } else {
+        clr = red
+      }
+      this.log(cli.chalk[clr](`${cmd}: ${mssg.toString()}`))
     })
 
     server.on('end', () => {
@@ -54,11 +70,11 @@ cli
       server.write(new Message({ username, command, contents }).toJSON() + '\n')
       // this.log(`broadcast: ${contents}`)
     } else if (command === 'whisper') {
-      //server.write(new Message({ username, command, contents }).toJSON() + '\n')
-      this.log(`whisper: ${contents}`)
+      server.write(new Message({ username, command, contents }).toJSON() + '\n')
+      // this.log(`whisper: ${contents}`)
     } else if (command === 'users') {
-      //server.write(new Message({ username, command, contents }).toJSON() + '\n')
-      this.log(`users: ...`)
+      server.write(new Message({ username, command, contents }).toJSON() + '\n')
+      // this.log(`users: ...`)
     } else {
       this.log(`Command <${command}> was not recognized`)
     }
