@@ -19,7 +19,7 @@ public class Server implements Runnable {
 		this.port = port;
 		this.executor = executor;
 	}
-
+	
 	public void run() {
 		log.info("server started");
 		ServerSocket ss;
@@ -27,7 +27,7 @@ public class Server implements Runnable {
 			ss = new ServerSocket(this.port);
 			while (true) {
 				Socket socket = ss.accept();
-				ClientHandler handler = new ClientHandler(socket, this.executor);
+				ClientHandler handler = new ClientHandler(socket, new SerialExecutor(this.executor));
 				executor.execute(handler);
 			}
 		} catch (IOException e) {
