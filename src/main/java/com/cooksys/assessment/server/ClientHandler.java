@@ -13,12 +13,15 @@ import org.slf4j.LoggerFactory;
 import com.cooksys.assessment.model.Message;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+
 public class ClientHandler implements Runnable {
 	private Logger log = LoggerFactory.getLogger(ClientHandler.class);
 
 	private Socket socket;
 
-	public ClientHandler(Socket socket) {
+	public ClientHandler(Socket socket, ExecutorService executor) {
 		super();
 		this.socket = socket;
 	}
@@ -52,6 +55,22 @@ public class ClientHandler implements Runnable {
 						log.info("user <{}> broadcast message <{}>", message.getUsername(), message.getContents());
 						String r = mapper.writeValueAsString(message);
 						writer.write(r);
+						writer.flush();
+						break;
+					case "whisper":
+						String[] contents = message.getContents().split(" ");
+						log.info("user <{}> whishpered message <{}> to user <{}>",
+								 message.getUsername(),
+								 String.join(" ", Arrays.copyOfRange(contents, 1, contents.length)),
+								 contents[0]);
+						String s = mapper.writeValueAsString(message);
+						writer.write(s);
+						writer.flush();
+						break;
+					case "users":
+						log.info("user <{}> users: ...", message.getUsername());
+						String t = mapper.writeValueAsString(message);
+						writer.write(t);
 						writer.flush();
 						break;
 				}
