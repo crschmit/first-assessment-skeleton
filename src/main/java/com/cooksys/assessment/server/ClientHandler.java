@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,16 +32,22 @@ public class ClientHandler implements Runnable {
 			BufferedReader reader,
 			PrintWriter writer,
 			Message message, 
-			Logger log) {
-		log.info("user <{}> connected", usr);
+			Logger log,
+			Date time) {
+		message.setTime(time);
+		log.info("[{}] user <{}> connected", message.getTime(), usr);
 		users.addUser(usr, mapper, reader, writer);
 		//users.tellUser(usr, message);
 		users.tellAll(message);
 	}
 	
-	public synchronized void disconnect(String usr, Message message, Logger log) {
-		log.info("user <{}> disconnected", usr);
-		users.tellAll(message);
+	public synchronized void disconnect(
+			String usr, 
+			Message message, 
+			Logger log,
+			Date time) {
+		message.setTime(time);
+		log.info("[{}] user <{}> disconnected", message.getTime(), usr);
 		users.remUser(usr);
 		try {
 			socket.close();
@@ -48,30 +55,51 @@ public class ClientHandler implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		users.tellAll(message);
 	}
 	
-	public synchronized void echo(String user, Message message, Logger log) {
-		log.info("user <{}> echoed message <{}>", user, message.getContents());
+	public synchronized void echo(
+			String user, 
+			Message message, 
+			Logger log,
+			Date time) {
+		message.setTime(time);
+		log.info("[{}] user <{}> echoed message <{}>",message.getTime(), user, message.getContents());
 		//User u = users.getUser(user);
 		users.tellUser(user, message);
 	}
 
-	public synchronized void broadcast(String user, Message message, Logger log) {
-		log.info("user <{}> echoed message <{}>", user, message.getContents());
+	public synchronized void broadcast(
+			String user, 
+			Message message, 
+			Logger log,
+			Date time) {
+		message.setTime(time);
+		log.info("[{}] user <{}> echoed message <{}>", message.getTime(), user, message.getContents());
 		users.tellAll(message);
 	}
 	
-	public synchronized void whisper(String user, Message message, Logger log) {
+	public synchronized void whisper(
+			String user, 
+			Message message, 
+			Logger log,
+			Date time) {
+		message.setTime(time);
 		String[] args = message.getContents().split(" ");
 		String target = args[0];
-		log.info("user <{}> whispered: ...", user);
+		log.info("[{}] user <{}> whispered: ...",message.getTime(), user);
 		users.tellUser(target, message);
 	}
 	
-	public synchronized void getUsers(String user, Message message, Logger log) {
-		log.info("user <{}> get users: ...", user);
+	public synchronized void getUsers(
+			String user, 
+			Message message, 
+			Logger log,
+			Date time) {
+		message.setTime(time);
+		log.info("[{}] user <{}> get users: ...", message.getTime(), user);
 		String[] usernames = users.getUserNames();
-		message.setContents(String.join("\n", usernames));
+		message.setContents(String.join(" ", usernames));
 		users.tellUser(user, message);
 	}
 	
@@ -89,6 +117,7 @@ public class ClientHandler implements Runnable {
 				String usr = message.getUsername();
 				String cmd = message.getCommand();
 				String cts = message.getContents();
+				Date time = new Date();
 				
 				switch (message.getCommand()) {
 					case "connect":
@@ -96,40 +125,40 @@ public class ClientHandler implements Runnable {
 						//users.add(usr, mapper, reader, writer);
 						////users.tellUser(usr, message);
 						//users.tellAll(message);
-						connect(usr, mapper, reader, writer, message, log);
+						connect(usr, mapper, reader, writer, message, log, time);
 						break;
 					case "disconnect":
 //						log.info("user <{}> disconnected", usr);
 //						this.socket.close();
-						disconnect(usr, message, log);
+						disconnect(usr, message, log, time);
 						break;
 					case "echo":
 //						log.info("user <{}> echoed message <{}>", usr, cts);
 //						String response = mapper.writeValueAsString(message);
 //						writer.write(response);
 //						writer.flush();
-						echo(usr, message, log);
+						echo(usr, message, log, time);
 						break;
 					case "broadcast":
 //						log.info("user <{}> broadcast: ...", usr);
 //						String s = mapper.writeValueAsString(message);
 //						writer.write(s);
 //						writer.flush();
-						broadcast(usr, message, log);
+						broadcast(usr, message, log, time);
 						break;
 					case "whisper":
 //						log.info("user <{}> whispered: ...", message.getUsername());
 //						String t = mapper.writeValueAsString(message);
 //						writer.write(t);
 //						writer.flush();
-						whisper(usr, message, log);
+						whisper(usr, message, log, time);
 						break;
 					case "users":
 //						log.info("user <{}> get users: ...", message.getUsername());
 //						String v = mapper.writeValueAsString(message);
 //						writer.write(v);
 //						writer.flush();
-						getUsers(usr, message, log);
+						getUsers(usr, message, log, time);
 						break;
 				}
 			}

@@ -4,7 +4,7 @@
  * @Email:  crschmit@gmail.com
  * @Filename: cli.js
  * @Last modified by:   Christian Schmitt
- * @Last modified time: 2017-06-15T19:13:32-05:00
+ * @Last modified time: 2017-06-15T21:23:04-05:00
  */
 
 
@@ -36,25 +36,36 @@ cli
     server.on('data', (buffer) => {
       let mssg = Message.fromJSON(buffer)
       let cmd = mssg.command
-      let clr
-      let m = mssg.toString()
+      let clr = null
+      //let m = mssg.toString()
+      let m = null
+      let t = mssg.time.split(' ')[3]
+      let u = mssg.username
+      let c = mssg.contents
+      let as = null
       if (cmd === 'disconnect') {
         clr = 'yellow'
+        m = `${t} <${u}> has disconnected`
       } else if (cmd === 'echo') {
         clr = 'gray'
+        m = `${t}: <${u}> (echo): ${c}`
       } else if (cmd === 'broadcast') {
         clr = 'white'
+        m = `${t}: <${u}> (all): ${c}`
       } else if (cmd === 'whisper') {
         clr = 'cyan'
+        as = c.split(' ')
+        m = `${t}: <${u}> (whisper): ${as.slice(1).join(' ')}`
       } else if (cmd === 'users') {
         clr = 'magenta'
+        m = `${t}: currently connected users: \n${c.split(' ').map(s => ' ' + s).join('\n')}`
       } else if (cmd === 'connect') {
         clr = 'blue'
-        m = `user <${mssg.username}> connected`
+        m = `${t} <${u}> has connected`
       } else {
         clr = 'red'
       }
-      this.log(cli.chalk[clr](`${cmd}: ${m}`))
+      if (m != null) this.log(cli.chalk[clr](m))
     })
 
     server.on('end', () => {
