@@ -4,7 +4,7 @@
  * @Email:  crschmit@gmail.com
  * @Filename: cli.js
  * @Last modified by:   Christian Schmitt
- * @Last modified time: 2017-06-15T21:23:04-05:00
+ * @Last modified time: 2017-06-15T23:46:34-05:00
  */
 
 
@@ -18,6 +18,7 @@ export const cli = vorpal()
 
 let username
 let server
+let lastMssg
 
 cli
   .delimiter(cli.chalk['yellow']('ftd~$'))
@@ -30,38 +31,39 @@ cli
     server = connect({ host: args.host ? args.host : 'localhost',
       port: args.port ? parseInt(args.port) : 8080 }, () => {
       server.write(new Message({ username, command: 'connect' }).toJSON() + '\n')
-      callback() // callback finishes transaction?
+      callback()
     })
 
     server.on('data', (buffer) => {
       let mssg = Message.fromJSON(buffer)
       let cmd = mssg.command
       let clr = null
-      //let m = mssg.toString()
       let m = null
-      let t = mssg.time.split(' ')[3]
+
+      let ts = mssg.time.split(' ')
+      let t = [ts[3], ...ts.slice(0, 3)].join(' ')
       let u = mssg.username
       let c = mssg.contents
       let as = null
       if (cmd === 'disconnect') {
         clr = 'yellow'
-        m = `${t} <${u}> has disconnected`
+        m = `${t}: <${u}> has disconnected`
       } else if (cmd === 'echo') {
         clr = 'gray'
-        m = `${t}: <${u}> (echo): ${c}`
+        m = `${t} <${u}> (echo) ${c}`
       } else if (cmd === 'broadcast') {
         clr = 'white'
-        m = `${t}: <${u}> (all): ${c}`
+        m = `${t} <${u}> (all): ${c}`
       } else if (cmd === 'whisper') {
         clr = 'cyan'
         as = c.split(' ')
-        m = `${t}: <${u}> (whisper): ${as.slice(1).join(' ')}`
+        m = `${t} <${u}>: (whisper) ${as.slice(1).join(' ')}`
       } else if (cmd === 'users') {
         clr = 'magenta'
         m = `${t}: currently connected users: \n${c.split(' ').map(s => ' ' + s).join('\n')}`
       } else if (cmd === 'connect') {
         clr = 'blue'
-        m = `${t} <${u}> has connected`
+        m = `${t}: <${u}> has connected`
       } else {
         clr = 'red'
       }
@@ -74,24 +76,29 @@ cli
   })
   .action(function (input, callback) {
     const [ command, ...rest ] = words(input)
-    const cmd_args = rest
     const contents = rest.join(' ')
+    let mssg = null
+
 
     if (command === 'disconnect') {
-      server.end(new Message({ username, command }).toJSON() + '\n')
+      mssg = new Message({ username, command })
+      server.end(mssg.toJSON() + '\n')
     } else if (command === 'echo') {
-      server.write(new Message({ username, command, contents }).toJSON() + '\n')
+      mssg = new Message({ username, command, contents })
+      server.write(mssg.toJSON() + '\n')
     } else if (command === 'broadcast') {
-      server.write(new Message({ username, command, contents }).toJSON() + '\n')
-      // this.log(`broadcast: ${contents}`)
+      mssg = new Message({ username, command, contents })
+      server.write(mssg.toJSON() + '\n')
     } else if (command === 'whisper') {
-      server.write(new Message({ username, command, contents }).toJSON() + '\n')
-      // this.log(`whisper: ${contents}`)
+      mssg = new Message({ username, command, contents })
+      server.write(mssg.toJSON() + '\n')
     } else if (command === 'users') {
-      server.write(new Message({ username, command, contents }).toJSON() + '\n')
-      // this.log(`users: ...`)
+      mssg = new Message({ username, command, contents })
+      server.write(mssg.toJSON() + '\n')
+    } else if ((input.split(' ').length === 1) && (input.split(' ')[0] != '')) {
+      this.log(`Command <${input.split(' ')[0]}> was not recognized`)
     } else {
-      this.log(`Command <${command}> was not recognized`)
+      //this.log(`Please provide a command, ${username}`)
     }
 
     callback()
