@@ -4,7 +4,7 @@
  * @Email:  crschmit@gmail.com
  * @Filename: cli.js
  * @Last modified by:   Christian Schmitt
- * @Last modified time: 2017-06-15T14:37:12-05:00
+ * @Last modified time: 2017-06-15T19:13:32-05:00
  */
 
 
@@ -37,6 +37,7 @@ cli
       let mssg = Message.fromJSON(buffer)
       let cmd = mssg.command
       let clr
+      let m = mssg.toString()
       if (cmd === 'disconnect') {
         clr = 'yellow'
       } else if (cmd === 'echo') {
@@ -47,10 +48,13 @@ cli
         clr = 'cyan'
       } else if (cmd === 'users') {
         clr = 'magenta'
+      } else if (cmd === 'connect') {
+        clr = 'blue'
+        m = `user <${mssg.username}> connected`
       } else {
         clr = 'red'
       }
-      this.log(cli.chalk[clr](`${cmd}: ${mssg.toString()}`))
+      this.log(cli.chalk[clr](`${cmd}: ${m}`))
     })
 
     server.on('end', () => {

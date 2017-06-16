@@ -13,15 +13,15 @@ public class Server implements Runnable {
 	
 	private int port;
 	private ExecutorService executor;
-	//private SerialExecutor executor;
+	private Users users;
 	
 	public Server(int port, ExecutorService executor) {
 		super();
 		this.port = port;
-//		this.executor = new SerialExecutor(executor);
 		this.executor = executor;
+		this.users = new Users();
 	}
-	
+
 	public void run() {
 		log.info("server started");
 		ServerSocket ss;
@@ -29,7 +29,7 @@ public class Server implements Runnable {
 			ss = new ServerSocket(this.port);
 			while (true) {
 				Socket socket = ss.accept();
-				ClientHandler handler = new ClientHandler(socket, executor);
+				ClientHandler handler = new ClientHandler(socket, this.users);
 				executor.execute(handler);
 			}
 		} catch (IOException e) {
