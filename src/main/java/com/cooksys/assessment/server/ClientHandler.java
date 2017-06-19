@@ -37,7 +37,6 @@ public class ClientHandler implements Runnable {
 		message.setTime(time);
 		log.info("[{}] user <{}> connected", message.getTime(), usr);
 		users.addUser(usr, mapper, reader, writer);
-		//users.tellUser(usr, message);
 		users.tellAll(message);
 	}
 	
@@ -52,7 +51,6 @@ public class ClientHandler implements Runnable {
 		try {
 			socket.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		users.tellAll(message);
@@ -65,7 +63,6 @@ public class ClientHandler implements Runnable {
 			Date time) {
 		message.setTime(time);
 		log.info("[{}] user <{}> echoed message <{}>",message.getTime(), user, message.getContents());
-		//User u = users.getUser(user);
 		users.tellUser(user, message);
 	}
 
@@ -121,43 +118,21 @@ public class ClientHandler implements Runnable {
 				
 				switch (message.getCommand()) {
 					case "connect":
-						//log.info("user <{}> connected", usr);
-						//users.add(usr, mapper, reader, writer);
-						////users.tellUser(usr, message);
-						//users.tellAll(message);
 						connect(usr, mapper, reader, writer, message, log, time);
 						break;
 					case "disconnect":
-//						log.info("user <{}> disconnected", usr);
-//						this.socket.close();
 						disconnect(usr, message, log, time);
 						break;
 					case "echo":
-//						log.info("user <{}> echoed message <{}>", usr, cts);
-//						String response = mapper.writeValueAsString(message);
-//						writer.write(response);
-//						writer.flush();
 						echo(usr, message, log, time);
 						break;
 					case "broadcast":
-//						log.info("user <{}> broadcast: ...", usr);
-//						String s = mapper.writeValueAsString(message);
-//						writer.write(s);
-//						writer.flush();
 						broadcast(usr, message, log, time);
 						break;
 					case "whisper":
-//						log.info("user <{}> whispered: ...", message.getUsername());
-//						String t = mapper.writeValueAsString(message);
-//						writer.write(t);
-//						writer.flush();
 						whisper(usr, message, log, time);
 						break;
 					case "users":
-//						log.info("user <{}> get users: ...", message.getUsername());
-//						String v = mapper.writeValueAsString(message);
-//						writer.write(v);
-//						writer.flush();
 						getUsers(usr, message, log, time);
 						break;
 				}
